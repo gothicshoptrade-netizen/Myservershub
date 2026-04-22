@@ -1,0 +1,122 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "An IT project to manage.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive", "archived"] },
+        "url": { "type": "string" },
+        "techStack": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "status", "ownerId", "createdAt", "updatedAt"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "A task associated with a project.",
+      "type": "object",
+      "properties": {
+        "content": { "type": "string" },
+        "priority": { "type": "string", "enum": ["critical", "urgent", "normal", "low"] },
+        "status": { "type": "string", "enum": ["todo", "in_progress", "done"] },
+        "ownerId": { "type": "string" },
+        "completedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["content", "priority", "status", "ownerId", "createdAt"]
+    },
+    "Server": {
+      "title": "Server",
+      "description": "A managed server.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "provider": { "type": "string" },
+        "os": { "type": "string" },
+        "projectId": { "type": "string" },
+        "notes": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ipAddress", "ownerId", "createdAt", "updatedAt"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "A deployed service on a server.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string" },
+        "port": { "type": "string" },
+        "serverId": { "type": "string" },
+        "projectId": { "type": "string" },
+        "notes": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ownerId", "createdAt", "updatedAt"]
+    },
+    "Credential": {
+      "title": "Credential",
+      "description": "An encrypted credential structure.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["SSH", "FTP", "DB", "WEB_PANEL", "API_KEY", "OTHER"] },
+        "username": { "type": "string" },
+        "passwordEncrypted": { "type": "string" },
+        "iv": { "type": "string" },
+        "authTag": { "type": "string" },
+        "resourceType": { "type": "string", "enum": ["project", "server", "service", "none"] },
+        "resourceId": { "type": "string" },
+        "notes": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "type", "passwordEncrypted", "iv", "authTag", "ownerId", "createdAt", "updatedAt"]
+    },
+    "ShareLink": {
+      "title": "ShareLink",
+      "description": "A temporarily scoped public link.",
+      "type": "object",
+      "properties": {
+        "resourceType": { "type": "string", "enum": ["project", "server", "service"] },
+        "resourceId": { "type": "string" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "revokedAt": { "type": "string", "format": "date-time" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["resourceType", "resourceId", "ownerId", "createdAt"]
+    },
+    "AccessLog": {
+      "title": "AccessLog",
+      "description": "Log of accesses to share links.",
+      "type": "object",
+      "properties": {
+        "ip": { "type": "string" },
+        "userAgent": { "type": "string" },
+        "accessedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ip", "userAgent", "accessedAt"]
+    }
+  },
+  "firestore": {
+    "projects": { "schema": { "$ref": "#/entities/Project" }, "description": "Projects managed by the user." },
+    "projects/{projectId}/tasks": { "schema": { "$ref": "#/entities/Task" }, "description": "Tasks for a project." },
+    "servers": { "schema": { "$ref": "#/entities/Server" }, "description": "Servers managed by the user." },
+    "services": { "schema": { "$ref": "#/entities/Service" }, "description": "Services deployed on servers." },
+    "credentials": { "schema": { "$ref": "#/entities/Credential" }, "description": "Encrypted credentials stored by the user." },
+    "shareLinks": { "schema": { "$ref": "#/entities/ShareLink" }, "description": "Secure link objects to share resources." },
+    "shareLinks/{tokenId}/logs": { "schema": { "$ref": "#/entities/AccessLog" }, "description": "Visitor logs for a share link." }
+  }
+}

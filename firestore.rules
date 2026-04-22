@@ -1,0 +1,166 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} { 
+      allow read, write: if false; 
+    }
+
+    // Phase 3: Primitive Definition
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+
+    // Phase 2: Schema Blueprint Validators
+    function isValidProject(data) {
+      return data.keys().hasAll(['name', 'status', 'ownerId', 'createdAt', 'updatedAt']) &&
+             data.name is string && data.name.size() <= 200 && data.name.size() > 0 &&
+             data.status in ['active', 'inactive', 'archived'] &&
+             data.ownerId == request.auth.uid &&
+             (data.description is string || !('description' in data.keys())) &&
+             (data.url is string || !('url' in data.keys())) &&
+             (data.techStack is string || !('techStack' in data.keys())) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidTask(data) {
+      return data.keys().hasAll(['content', 'priority', 'status', 'ownerId', 'createdAt', 'updatedAt']) &&
+             data.content is string && data.content.size() <= 1000 && data.content.size() > 0 &&
+             data.priority in ['critical', 'urgent', 'normal', 'low'] &&
+             data.status in ['todo', 'in_progress', 'done'] &&
+             data.ownerId == request.auth.uid &&
+             (data.completedAt is timestamp || data.completedAt == null || !('completedAt' in data.keys())) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidServer(data) {
+      return data.keys().hasAll(['name', 'ipAddress', 'ownerId', 'createdAt', 'updatedAt']) &&
+             data.name is string && data.name.size() <= 200 && data.name.size() > 0 &&
+             data.ipAddress is string && data.ipAddress.size() <= 45 &&
+             data.ownerId == request.auth.uid &&
+             (data.provider is string || !('provider' in data.keys())) &&
+             (data.os is string || !('os' in data.keys())) &&
+             (data.projectId is string || !('projectId' in data.keys())) &&
+             (data.notes is string || !('notes' in data.keys())) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidService(data) {
+      return data.keys().hasAll(['name', 'ownerId', 'createdAt', 'updatedAt']) &&
+             data.name is string && data.name.size() <= 200 && data.name.size() > 0 &&
+             data.ownerId == request.auth.uid &&
+             (data.url is string || !('url' in data.keys())) &&
+             (data.port is string || !('port' in data.keys())) &&
+             (data.serverId is string || !('serverId' in data.keys())) &&
+             (data.projectId is string || !('projectId' in data.keys())) &&
+             (data.notes is string || !('notes' in data.keys())) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidCredential(data) {
+      return data.keys().hasAll(['name', 'type', 'passwordEncrypted', 'iv', 'authTag', 'ownerId', 'createdAt', 'updatedAt']) &&
+             data.name is string && data.name.size() <= 200 && data.name.size() > 0 &&
+             data.type in ['SSH', 'FTP', 'DB', 'WEB_PANEL', 'API_KEY', 'OTHER'] &&
+             data.passwordEncrypted is string && data.passwordEncrypted.size() <= 2000 &&
+             data.iv is string && data.iv.size() <= 100 &&
+             data.authTag is string && data.authTag.size() <= 100 &&
+             data.ownerId == request.auth.uid &&
+             (data.username is string || !('username' in data.keys())) &&
+             (data.resourceType in ['project', 'server', 'service', 'none'] || !('resourceType' in data.keys())) &&
+             (data.resourceId is string || !('resourceId' in data.keys())) &&
+             (data.notes is string || !('notes' in data.keys())) &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp;
+    }
+
+    function isValidShareLink(data) {
+      return data.keys().hasAll(['resourceType', 'resourceId', 'snapshot', 'ownerId', 'createdAt']) &&
+             data.resourceType in ['project', 'server', 'service'] &&
+             data.resourceId is string && data.resourceId.size() <= 128 &&
+             data.snapshot is map &&
+             data.ownerId == request.auth.uid &&
+             (data.expiresAt is timestamp || data.expiresAt == null || !('expiresAt' in data.keys())) &&
+             (data.revokedAt is timestamp || data.revokedAt == null || !('revokedAt' in data.keys())) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidAccessLog(data) {
+      return data.keys().hasAll(['ip', 'userAgent', 'accessedAt']) &&
+             data.ip is string && data.ip.size() <= 45 &&
+             data.userAgent is string && data.userAgent.size() <= 500 &&
+             data.accessedAt is timestamp;
+    }
+
+    // The Collections
+    match /projects/{projectId} {
+      allow read: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(projectId) && isValidProject(incoming()) && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isValidProject(incoming()) && incoming().ownerId == existing().ownerId && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time;
+      allow delete: if isSignedIn() && existing().ownerId == request.auth.uid;
+
+      match /tasks/{taskId} {
+        // Relational Sync Check: User can only access tasks if they own the parent project
+        function isProjectOwner() {
+          return get(/databases/$(database)/documents/projects/$(projectId)).data.ownerId == request.auth.uid;
+        }
+
+        allow read: if isSignedIn() && existing().ownerId == request.auth.uid && isProjectOwner();
+        allow create: if isSignedIn() && isValidId(taskId) && isValidTask(incoming()) && incoming().createdAt == request.time && isProjectOwner();
+        allow update: if isSignedIn() && isValidTask(incoming()) && incoming().ownerId == existing().ownerId && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time && isProjectOwner();
+        allow delete: if isSignedIn() && existing().ownerId == request.auth.uid && isProjectOwner();
+      }
+    }
+
+    match /servers/{serverId} {
+      allow read: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(serverId) && isValidServer(incoming()) && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isValidServer(incoming()) && incoming().ownerId == existing().ownerId && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time;
+      allow delete: if isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+
+    match /services/{serviceId} {
+      allow read: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(serviceId) && isValidService(incoming()) && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isValidService(incoming()) && incoming().ownerId == existing().ownerId && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time;
+      allow delete: if isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+
+    match /credentials/{credId} {
+      allow read: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(credId) && isValidCredential(incoming()) && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isValidCredential(incoming()) && incoming().ownerId == existing().ownerId && incoming().createdAt == existing().createdAt && incoming().updatedAt == request.time;
+      allow delete: if isSignedIn() && existing().ownerId == request.auth.uid;
+    }
+
+    match /shareLinks/{linkId} {
+      // ANYONE can read a shareLink IF it is not expired and not revoked
+      allow read: if (existing().expiresAt == null || existing().expiresAt > request.time) && 
+                     (existing().revokedAt == null);
+      
+      // Only the owner can create/update/delete
+      allow create: if isSignedIn() && isValidId(linkId) && isValidShareLink(incoming()) && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && isValidShareLink(incoming()) && incoming().ownerId == existing().ownerId && incoming().createdAt == existing().createdAt;
+      allow delete: if isSignedIn() && existing().ownerId == request.auth.uid;
+
+      match /logs/{logId} {
+        // We cannot securely allow anonymous writes without abuse risk unless we have a specific rule
+        // BUT we need anyone to write a log when they visit. We can do client-side log write? 
+        // We'll restrict to append-only for anyone if the link is active.
+        function isLinkActive() {
+          let link = get(/databases/$(database)/documents/shareLinks/$(linkId)).data;
+          return (link.expiresAt == null || link.expiresAt > request.time) && (link.revokedAt == null);
+        }
+        
+        allow read: if isSignedIn() && get(/databases/$(database)/documents/shareLinks/$(linkId)).data.ownerId == request.auth.uid;
+        allow create: if isValidId(logId) && isValidAccessLog(incoming()) && incoming().accessedAt == request.time && isLinkActive();
+      }
+    }
+  }
+}
