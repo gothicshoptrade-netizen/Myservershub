@@ -78,7 +78,7 @@ export default function ServersPage() {
   };
 
   return (
-    <div className="space-y-6 bg-white dark:bg-slate-900 rounded-lg p-6 shadow-sm border">
+    <div className="space-y-6 rounded-lg p-6 border-0 neu-flat">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">{t('servers')}</h1>
         <Dialog open={open} onOpenChange={setOpen}>

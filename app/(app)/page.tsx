@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { collection, query, where, getCountFromServer, getDocs, orderBy, limit } from "firebase/firestore";
 import { db, useAuth } from "@/lib/providers";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FolderKanban, Server, Network, KeyRound } from "lucide-react";
+import { FolderKanban, Server, Network, KeyRound, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
@@ -69,43 +69,98 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">{t('system_overview')}</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('active_projects')}</CardTitle>
-            <FolderKanban className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.projects}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('total_servers')}</CardTitle>
-            <Server className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.servers}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('total_services')}</CardTitle>
-            <Network className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.services}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('stored_credentials')}</CardTitle>
-            <KeyRound className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.credentials}</div>
-          </CardContent>
-        </Card>
+      <Card className="bg-gradient-to-br from-background to-muted/20 border-0 neu-flat mb-6">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">IT-Box — Единый сейф для всей вашей инфраструктуры</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-500 neu-pressed shrink-0">
+               <KeyRound className="h-5 w-5" />
+            </div>
+            <p className="text-muted-foreground text-sm md:text-base">Прекратите искать доступы в чатах и таблицах.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-500 neu-pressed shrink-0">
+               <Share2 className="h-5 w-5" />
+            </div>
+            <p className="text-muted-foreground text-sm md:text-base">Контролируйте, кто и к чему имеет доступ, в один клик.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-500 neu-pressed shrink-0">
+               <Network className="h-5 w-5" />
+            </div>
+            <p className="text-muted-foreground text-sm md:text-base">От фрилансера до корпорации.</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Link href="/projects" className="block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-xl">
+          <Card className="h-full hover:neu-pressed transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('active_projects')}</CardTitle>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 neu-flat">
+                 <FolderKanban className="h-5 w-5" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-black mb-4">{stats.projects}</div>
+              <div className="flex items-center text-sm font-medium text-cyan-600 dark:text-cyan-400">
+                 Все <span className="ml-1">→</span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/servers" className="block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-xl">
+          <Card className="h-full hover:neu-pressed transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('total_servers')}</CardTitle>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 neu-flat">
+                 <Server className="h-5 w-5" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-black mb-4">{stats.servers}</div>
+              <div className="flex items-center text-sm font-medium text-purple-600 dark:text-purple-400">
+                 Все <span className="ml-1">→</span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/services" className="block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-xl">
+          <Card className="h-full hover:neu-pressed transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('total_services')}</CardTitle>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-500/10 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 neu-flat">
+                 <Network className="h-5 w-5" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-black mb-4">{stats.services}</div>
+              <div className="flex items-center text-sm font-medium text-yellow-600 dark:text-yellow-400">
+                 Все <span className="ml-1">→</span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/credentials" className="block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-xl">
+          <Card className="h-full hover:neu-pressed transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('stored_credentials')}</CardTitle>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10 dark:bg-red-500/20 text-red-600 dark:text-red-400 neu-flat">
+                 <KeyRound className="h-5 w-5" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-black mb-4">{stats.credentials}</div>
+              <div className="flex items-center text-sm font-medium text-red-600 dark:text-red-400">
+                 Все <span className="ml-1">→</span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">

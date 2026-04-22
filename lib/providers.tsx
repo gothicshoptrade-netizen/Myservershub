@@ -75,7 +75,7 @@ i18n
         }
       }
     },
-    fallbackLng: 'en',
+    fallbackLng: 'ru',
     interpolation: { escapeValue: false }
   });
 
@@ -96,6 +96,8 @@ const AuthContext = createContext<AuthContextType>({
 export function useAuth() {
   return useContext(AuthContext);
 }
+
+import { ThemeProvider } from 'next-themes';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -119,10 +121,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <I18nextProvider i18n={i18n}>
-      <AuthContext.Provider value={{ user, loading, login, logout }}>
-        {children}
-      </AuthContext.Provider>
-    </I18nextProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <I18nextProvider i18n={i18n}>
+        <AuthContext.Provider value={{ user, loading, login, logout }}>
+          {children}
+        </AuthContext.Provider>
+      </I18nextProvider>
+    </ThemeProvider>
   );
 }

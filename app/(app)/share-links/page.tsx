@@ -62,7 +62,7 @@ export default function ShareLinksPage() {
   };
 
   return (
-    <div className="space-y-6 bg-white dark:bg-slate-900 rounded-lg p-6 shadow-sm border">
+    <div className="space-y-6 rounded-lg p-6 border-0 neu-flat">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t('share_links')}</h1>
         <p className="text-muted-foreground mt-1">Manage public snapshots of your infrastructure.</p>
