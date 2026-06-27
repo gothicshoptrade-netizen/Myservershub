@@ -69,6 +69,8 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">{t('system_overview')}</p>
       </div>
 
+      {/* PAYWALL STUB - COMMENTED OUT TEMPORARILY */}
+      {/* 
       <Card className="bg-gradient-to-br from-background to-muted/20 border-0 neu-flat mb-6">
         <CardHeader className="pb-4">
           <CardTitle className="text-xl md:text-2xl font-bold tracking-tight">IT-Box — Единый сейф для всей вашей инфраструктуры</CardTitle>
@@ -94,6 +96,7 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+      */}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Link href="/projects" className="block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-xl">
