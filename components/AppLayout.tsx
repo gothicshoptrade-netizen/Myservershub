@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, FolderKanban, Server, Network, KeyRound, Share2, LogOut, Menu, Languages, Search, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import { Input } from './ui/input';
@@ -17,6 +17,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -77,6 +78,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar Desktop */}
@@ -120,7 +130,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span className="block opacity-70 mb-2">v1.0.0</span>
             <span className="block opacity-50">&copy; 2026 IT-Box</span>
             <span className="block opacity-50 mb-2">Политика конфиденциальности</span>
-            <Button variant="ghost" className="w-fit justify-start bg-transparent text-red-500 hover:text-red-700 hover:bg-transparent h-auto p-0" onClick={logout}>
+            <Button variant="ghost" className="w-fit justify-start bg-transparent text-red-500 hover:text-red-700 hover:bg-transparent h-auto p-0" onClick={handleLogout}>
               {t('logout')}
             </Button>
           </div>
@@ -188,25 +198,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       <span className="text-[10px] font-normal text-muted-foreground tracking-tight">Сейф для инфраструктуры</span>
                     </div>
                   </Link>
-               </div>
-               <nav className="grid p-4 text-sm font-medium gap-3">
-                 {navItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setSidebarOpen(false)}
-                      className={cn(
-                        "flex items-center gap-4 rounded-xl px-4 py-3 transition-all",
-                        pathname === item.href 
-                          ? "bg-background neu-pressed text-primary font-semibold" 
-                          : "text-muted-foreground hover:neu-flat hover:text-foreground"
-                      )}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {item.label}
-                    </Link>
-                  ))}
-               </nav>
+                </div>
+                <nav className="grid p-4 text-sm font-medium gap-3">
+                  {navItems.map((item) => (
+                     <Link
+                       key={item.href}
+                       href={item.href}
+                       onClick={() => setSidebarOpen(false)}
+                       className={cn(
+                         "flex items-center gap-4 rounded-xl px-4 py-3 transition-all",
+                         pathname === item.href 
+                           ? "bg-background neu-pressed text-primary font-semibold" 
+                           : "text-muted-foreground hover:neu-flat hover:text-foreground"
+                       )}
+                     >
+                       <item.icon className="h-5 w-5" />
+                       {item.label}
+                     </Link>
+                   ))}
+                </nav>
+                <div className="mt-auto p-4 flex flex-col gap-1 items-start text-xs text-muted-foreground">
+                  <Button variant="ghost" className="w-full justify-start bg-transparent text-red-500 hover:text-red-700 hover:bg-transparent h-auto p-0" onClick={handleLogout}>
+                    {t('logout')}
+                  </Button>
+                </div>
             </aside>
           </div>
         )}
